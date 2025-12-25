@@ -1,22 +1,25 @@
 import 'package:demo_task/model/user_model.dart';
 import 'package:demo_task/network_manager/api_service.dart';
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-
-
-
 
 enum AlphabetSortOrderEnum { az, za, none }
 
 class UserControllerProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   List<UserListModel> _users = [];
+
   List<UserListModel> get users => _filteredUsers;
 
   List<UserListModel> _filteredUsers = [];
   bool _isLoading = false;
+
   bool get isLoading => _isLoading;
   String? _error;
+  String? _successMessage;
+  String? get successMessage => _successMessage;
+
   String? get error => _error;
   int page = 1;
   final int perPageResults = 20;
@@ -40,7 +43,10 @@ class UserControllerProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> fetchUserList({bool append = false, bool refresh = false}) async {
+  Future<void> fetchUserList({
+    bool append = false,
+    bool refresh = false,
+  }) async {
     if (refresh) {
       page = 1;
       _users.clear();
@@ -98,7 +104,8 @@ class UserControllerProvider extends ChangeNotifier {
     _filteredUsers = _users.where((user) {
       final fullName = user.fullName.toLowerCase();
       final email = user.email.toLowerCase();
-      return fullName.contains(searchQueryStr) || email.contains(searchQueryStr) ;
+      return fullName.contains(searchQueryStr) ||
+          email.contains(searchQueryStr);
     }).toList();
 
     if (sortingOrder == AlphabetSortOrderEnum.az) {
@@ -118,5 +125,64 @@ class UserControllerProvider extends ChangeNotifier {
   void dispose() {
     scrollController.dispose();
     super.dispose();
+  }
+  Future<void> registerVendor({
+    required BuildContext context,
+    required Map<String, dynamic> formData,
+    required PlatformFile? panCardFile,
+    required PlatformFile? gstCertFile,
+    required PlatformFile? passportPhotoFile,
+    required PlatformFile? registrationCertFile,
+    required PlatformFile? fssaiCertFile,
+    required PlatformFile? aadhaarCardFile,
+    required PlatformFile? businessAddressProofFile,
+    required PlatformFile? otherCertificatesFile,
+    required PlatformFile? chequeFile,
+    required PlatformFile? passbookFile,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    _successMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.registerVendor(
+        formData: formData,
+        panCardFile: panCardFile,
+        gstCertFile: gstCertFile,
+        passportPhotoFile: passportPhotoFile,
+        registrationCertFile: registrationCertFile,
+        fssaiCertFile: fssaiCertFile,
+        aadhaarCardFile: aadhaarCardFile,
+        businessAddressProofFile: businessAddressProofFile,
+        otherCertificatesFile: otherCertificatesFile,
+        chequeFile: chequeFile,
+        passbookFile: passbookFile,
+      );
+
+      _successMessage = response['message'] ?? 'Registration successful!';
+      notifyListeners();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_successMessage!), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      _error = (e as Map)['message'] ?? 'Registration failed';
+      notifyListeners();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_error!), backgroundColor: Colors.red),
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void reset() {
+    _error = null;
+    _successMessage = null;
+    _isLoading = false;
+    notifyListeners();
   }
 }

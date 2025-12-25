@@ -1,5 +1,7 @@
+import 'package:demo_task/controller/auth_controller.dart';
 import 'package:demo_task/controller/theme_provider.dart';
 import 'package:demo_task/controller/user_controller.dart';
+import 'package:demo_task/views/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'utils/theme.dart';
@@ -12,6 +14,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserControllerProvider()),
+        ChangeNotifierProvider(create: (_) => AuthApiProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: const MyApp(),
@@ -34,11 +37,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'User Filter List',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      // theme: AppTheme.lightTheme,
+      // darkTheme: AppTheme.darkTheme,
+      // themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: RegistrationScreen(),
     );
   }
 }
